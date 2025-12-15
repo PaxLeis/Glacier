@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glacier - Your Personal Dashboard</title>
+    <meta name="description" content="Glacier: Your visual dashboard for quick access to your favorite websites and tools.">
+    <!-- Google Fonts: Kanit for a balanced, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* --- Global Styles --- */
+        body {
+            font-family: 'Kanit', sans-serif; /* Primary font for body text */
+            margin: 0; padding: 0;
+            background-color: #0a0a0f; /* Deep, slightly cool dark blue */
+            color: #d0d0e0; /* Soft light grey/blue */
+            line-height: 1.8;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+            /* Subtle noise texture */
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAADUlEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='); /* 1x1 pixel noise */
+            background-repeat: repeat;
+            background-color: #0a0a0f; /* Base color */
+            /* Add padding-bottom to prevent content from being hidden by the fixed nav */
+            padding-bottom: 90px; /* Adjust based on nav height */
+        }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px; /* Slightly more padding */
+        }
+        /* --- Header/Branding --- */
+        .site-header {
+            text-align: center;
+            margin-bottom: 40px; /* More space below header */
+            padding: 30px 0;
+            color: #a0c0ff; /* Softer, more ethereal blue */
+            text-shadow: 0 0 8px rgba(100, 150, 255, 0.6), 0 0 15px rgba(50, 100, 200, 0.4); /* Softer glow */
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(80, 120, 200, 0.3); /* Subtle separator */
+        }
+        .site-header h1 {
+            margin: 0; font-size: 3.5em; font-weight: 700;
+            font-family: 'Kanit', sans-serif; /* Using Kanit bold for the title */
+            letter-spacing: 3px;
+            text-shadow: 0 0 5px rgba(100, 150, 255, 0.7);
+        }
+        /* --- Navigation Bar (Fixed to Bottom) --- */
+        .main-navigation-bar {
+            background-color: rgba(15, 20, 30, 0.85); /* Darker, slightly translucent blue */
+            padding: 12px 0; /* Adjusted padding */
+            border-radius: 15px 15px 0 0; /* Rounded top corners */
+            box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.6), /* Stronger top shadow */
+                        0 0 15px rgba(0, 50, 100, 0.3); /* Subtle overall glow */
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(8px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .main-nav-content {
+            display: flex; justify-content: center; align-items: center;
+            flex-wrap: wrap; gap: 15px;
+            max-width: 1400px; margin: 0 auto; padding: 0 20px;
+        }
+        .main-nav-list {
+            list-style: none;
+            padding: 0; margin: 0;
+            display: flex;
+            gap: 15px; /* More space between links */
+            flex-wrap: wrap; justify-content: center;
+        }
+        .main-nav-item { display: inline-flex; }
+        .main-nav-link {
+            color: #b0d0ff; /* Softer link color */
+            text-decoration: none;
+            font-weight: 400; /* Using Kanit regular */
+            font-size: 1em; /* Slightly smaller */
+            padding: 10px 22px; /* More generous padding */
+            border-radius: 30px; /* More rounded */
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.4s ease, transform 0.2s ease;
+            background-color: transparent;
+            box-shadow: inset 0 0 0 1.5px rgba(100, 150, 255, 0.4); /* Softer inset border */
+            cursor: pointer;
+            position: relative; /* For potential subtle animations */
+            overflow: hidden; /* To contain animations */
+        }
+        .main-nav-link:hover, .main-nav-link:focus {
+            background-color: rgba(80, 130, 220, 0.3); /* Subtle background on hover */
+            color: #ffffff; /* Brighter text on hover */
+            box-shadow: 0 0 12px rgba(100, 150, 255, 0.7); /* Softer, more prominent glow */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+        /* Hamburger Menu Styles */
+        .hamburger-menu { display: none; cursor: pointer; padding: 10px; margin-left: auto; position: relative; z-index: 1001; }
+        .hamburger-icon {
+            width: 28px; height: 4px; background-color: #b0d0ff; /* Match link color */
+            margin: 7px 0; transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 6px rgba(100, 150, 255, 0.7); /* Softer glow */
+        }
+        .hamburger-menu.active .bar1 { transform: rotate(-45deg) translate(-7px, -7px); }
+        .hamburger-menu.active .bar2 { opacity: 0; }
+        .hamburger-menu.active .bar3 { transform: rotate(45deg) translate(-7px, 7px); }
+
+        /* --- Search Bar Area --- */
+        .search-section {
+            text-align: center;
+            padding: 70px 20px; /* More vertical space */
+            background-color: rgba(10, 15, 25, 0.7); /* Slightly more translucent, cooler dark */
+            border-radius: 20px; /* More rounded */
+            box-shadow: 0 10px 30px rgba(0, 20, 50, 0.4), /* Deeper shadow */
+                        inset 0 0 15px rgba(50, 100, 150, 0.2); /* Softer inner glow */
+            margin-top: 50px; /* More space above search */
+            border: 1px solid rgba(50, 100, 150, 0.3); /* Subtle border */
+        }
+        .search-section h2 {
+            font-size: 2.8em; color: #c0d0ff; /* Softer title color */
+            margin-top: 0; margin-bottom: 40px; /* More space below title */
+            font-weight: 700; /* Using Kanit bold */
+            font-family: 'Kanit', sans-serif;
+            text-shadow: 0 0 12px rgba(100, 150, 255, 0.7);
+        }
+        .search-bar-container {
+            display: flex; justify-content: center; width: 100%; max-width: 700px; margin: 0 auto;
+            background-color: rgba(20, 30, 45, 0.8); /* Darker, slightly bluish background */
+            border-radius: 40px; /* More rounded */
+            box-shadow: 0 0 25px rgba(50, 100, 150, 0.5), /* Stronger outer glow */
+                        inset 0 0 10px rgba(20, 40, 70, 0.5); /* Inner glow */
+            border: 1.5px solid rgba(80, 130, 220, 0.4); /* Thicker, softer border */
+            overflow: hidden;
+        }
+        .search-bar-container form { display: flex; width: 100%; }
+        #google-search-input {
+            flex-grow: 1; padding: 20px 35px; /* More padding */
+            border: none; font-size: 1.2em; outline: none;
+            background-color: transparent; color: #d0d0e0;
+        }
+        #google-search-input::placeholder { color: rgba(150, 170, 190, 0.7); } /* Softer placeholder */
+        .search-button {
+            background-color: transparent; /* Transparent by default */
+            color: #b0d0ff; /* Match link color */
+            border: none;
+            padding: 20px 35px; cursor: pointer; font-size: 1.2em;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.4s ease;
+            border-left: 1.5px solid rgba(80, 130, 220, 0.4); /* Match border */
+            box-shadow: none;
+            font-weight: 700; /* Using Kanit bold */
+            letter-spacing: 0.5px;
+        }
+        .search-button:hover {
+            background-color: rgba(80, 130, 220, 0.3);
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(100, 150, 255, 0.8);
+        }
+
+        /* --- Page Overlay Styles --- */
+        .page-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(10, 15, 25, 0.9); /* Darker, bluer overlay background */
+            z-index: 100;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+            display: flex; justify-content: center; align-items: center;
+            overflow-y: auto; padding: 30px 0;
+        }
+        .page-overlay.visible { opacity: 1; visibility: visible; }
+        .overlay-content {
+            width: 90%; max-width: 1100px;
+            background-color: rgba(15, 20, 35, 0.9); /* Darker, cooler overlay content */
+            border-radius: 20px; /* More rounded corners */
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0, 20, 50, 0.5), /* Deeper shadow */
+                        inset 0 0 20px rgba(50, 100, 150, 0.3); /* Inner glow */
+            transform: scale(0.97); /* Less aggressive scale down */
+            transition: transform 0.6s ease-in-out;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: flex; flex-direction: column;
+            border: 1px solid rgba(50, 100, 150, 0.3); /* Subtle border */
+        }
+        /* Specific styling for the game selection overlay */
+        .overlay-content.game-selection-content {
+            padding: 0; background-color: transparent; box-shadow: none; border: none;
+            width: 85%; max-width: 750px; /* Slightly larger selection area */
+        }
+        /* Specific styling for the main game playing overlay (iframe) */
+        .overlay-content.game-play-content {
+            padding: 0; background-color: transparent; box-shadow: none; border: none;
+            width: 90%; max-width: 1250px; /* Maximize space for game */
+        }
+
+        .page-overlay.visible .overlay-content { transform: scale(1); }
+
+        .overlay-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding: 20px 40px 15px 40px;
+            border-bottom: 1px solid rgba(80, 130, 220, 0.4); /* Softer separator */
+            background-color: rgba(15, 20, 35, 0.9); /* Match content background */
+            border-radius: 20px 20px 0 0; /* Rounded top corners */
+            position: sticky; top: 0; z-index: 101;
+        }
+        /* Adjust header for game selection overlay */
+        .game-selection-content .overlay-header {
+            position: relative; margin-bottom: 0; border-bottom: none; padding: 20px 40px;
+            background-color: rgba(15, 20, 35, 0.9); border-radius: 20px 20px 0 0; z-index: 101;
+        }
+        /* Adjust header for game playing overlay */
+        .game-play-content .overlay-header {
+            position: relative; margin-bottom: 0; border-bottom: none; padding: 20px 40px;
+            background-color: rgba(15, 20, 35, 0.9); border-radius: 20px 20px 0 0; z-index: 101;
+        }
+        #game-overlay .overlay-header { margin-bottom: 0; border-bottom: none; }
+
+        .overlay-header h2 {
+            font-size: 2.2em; color: #c0d0ff; /* Softer title */
+            margin: 0; font-weight: 700; /* Using Kanit bold */
+            font-family: 'Kanit', sans-serif;
+            text-shadow: 0 0 10px rgba(100, 150, 255, 0.7);
+        }
+        .close-button {
+            font-size: 2em; color: #b0d0ff; /* Softer color */
+            cursor: pointer;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            padding: 5px 10px;
+        }
+        .close-button:hover {
+            color: #ffffff;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+        }
+        /* --- Grid for Apps/Games within Overlays --- */
+        .app-tile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Slightly larger tiles */
+            gap: 25px; /* More gap */
+            justify-items: center;
+            padding: 20px 40px 40px 40px;
+        }
+        /* --- Individual App/Game Tile Styles --- */
+        .app-tile {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; color: #d0d0e0; /* Softer text */
+            background-color: rgba(20, 30, 45, 0.8); /* Darker, bluer background */
+            border: 1px solid rgba(80, 130, 220, 0.4); /* Softer border */
+            border-radius: 12px; /* More rounded */
+            padding: 20px 15px; /* More padding */
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.4s ease;
+            width: 100%; box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 10, 30, 0.4); /* Softer, more subtle shadow */
+            cursor: pointer;
+            height: 110px; /* Slightly taller tiles */
+        }
+        .app-tile:hover {
+            background-color: rgba(80, 130, 220, 0.3); /* Subtle hover background */
+            color: #ffffff;
+            transform: translateY(-4px); /* More pronounced lift */
+            box-shadow: 0 8px 25px rgba(100, 150, 255, 0.6); /* Brighter, more noticeable glow */
+        }
+        .app-tile .app-title {
+            margin: 0; font-size: 1.1em; font-weight: 700; /* Slightly bolder title */
+            color: #c0d0ff; /* Softer title color */
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Iframe Styles for Game Playing Overlay --- */
+        .game-iframe {
+            width: 100%;
+            height: calc(85vh - 120px); /* Adjusted for new padding/header height */
+            border: none; display: block;
+            border-radius: 0 0 20px 20px; /* Match overlay rounding */
+            box-sizing: border-box;
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 992px) { /* Larger tablet breakpoint */
+            .site-header h1 { font-size: 2.8em; }
+            .main-navigation-bar { padding: 10px 0; }
+            body { padding-bottom: 80px; }
+            .main-nav-list { gap: 12px; }
+            .main-nav-link { padding: 9px 18px; font-size: 1em; }
+            .app-tile-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 20px; }
+            .app-tile { height: 100px; }
+            .overlay-content { padding: 35px; }
+            .game-iframe { height: calc(85vh - 110px); }
+        }
+        @media (max-width: 768px) {
+            .site-header h1 { font-size: 2.2em; }
+            .main-navigation-bar { padding: 8px 0; }
+            body { padding-bottom: 70px; }
+            .main-nav-link { padding: 8px 15px; font-size: 0.95em; }
+            .hamburger-menu { display: block; } /* Show hamburger */
+            .main-nav-list { flex-direction: column; width: 100%; } /* Stack links */
+            .main-nav-item { margin: 5px 0; }
+
+            .search-section { padding: 50px 15px; margin-top: 30px; }
+            .search-section h2 { font-size: 2em; margin-bottom: 30px; }
+            .search-bar-container { max-width: 95%; border-radius: 30px;}
+            #google-search-input, .search-button { padding: 15px 25px; font-size: 1.1em; }
+
+            .overlay-content { padding: 30px; width: 95%;}
+            .overlay-header { padding: 15px 30px; }
+            .overlay-header h2 { font-size: 1.8em; }
+            .close-button { font-size: 1.8em; }
+            .app-tile-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 18px; padding: 15px 15px 30px 15px; }
+            .app-tile { height: 90px; }
+            .game-iframe { height: calc(85vh - 100px); }
+        }
+        @media (max-width: 576px) {
+            .site-header h1 { font-size: 1.8em; }
+            .main-navigation-bar { padding: 6px 0; }
+            body { padding-bottom: 60px; }
+
+            .main-nav-link { padding: 6px 12px; font-size: 0.9em; }
+
+            .search-section { padding: 40px 15px; margin-top: 20px; }
+            .search-section h2 { font-size: 1.6em; margin-bottom: 20px; }
+            .search-bar-container { max-width: 100%; border-radius: 30px;}
+            #google-search-input, .search-button { padding: 12px 20px; font-size: 1em; }
+
+            .overlay-content { padding: 25px; }
+            .overlay-header { padding: 12px 25px; }
+            .overlay-header h2 { font-size: 1.6em; }
+            .close-button { font-size: 1.6em; }
+            .app-tile-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px; padding: 12px 12px 25px 12px; }
+            .app-tile { height: 75px; padding: 10px 8px; }
+            .app-tile .app-title { font-size: 0.9em; }
+            .game-iframe { height: calc(85vh - 90px); }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="dashboard-container">
+            <h1>Glacier</h1>
+        </div>
+    </header>
+
+    <main class="main-content-wrapper">
+        <!-- Search Section -->
+        <div class="search-section dashboard-container">
+            <h2>Quick Search</h2>
+            <div class="search-bar-container">
+                <form id="google-search-form" action="https://www.bing.com" method="GET" target="_blank">
+                    <input type="text" id="google-search-input" name="q" placeholder="Search Bing" required>
+                    <button type="submit" class="search-button">Search</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Other Overlays (Google, News, Tools, Entertainment, Learning) -->
+        <!-- GOOGLE OVERLAY -->
+        <div id="google-overlay" class="page-overlay">
+            <div class="overlay-content">
+                <div class="overlay-header">
+                    <h2>Google Products</h2>
+                    <span class="close-button">&times;</span>
+                </div>
+                <div class="app-tile-grid">
+                    <a href="https://mail.google.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Gmail</h3>
+                    </a>
+                    <a href="https://docs.google.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Docs</h3>
+                    </a>
+                    <a href="https://docs.google.com/presentation" target="_blank" class="app-tile">
+                        <h3 class="app-title">Slides</h3>
+                    </a>
+                    <a href="https://drive.google.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Drive</h3>
+                    </a>
+                    <a href="https://docs.google.com/sheets" target="_blank" class="app-tile">
+                        <h3 class="app-title">Sheets</h3>
+                    </a>
+                    <a href="https://www.youtube.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">YouTube</h3>
+                    </a>
+                    <a href="https://www.google.com/intl/en_in/maps/about/" target="_blank" class="app-tile">
+                        <h3 class="app-title">Maps</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEWS OVERLAY -->
+        <div id="news-overlay" class="page-overlay">
+            <div class="overlay-content">
+                <div class="overlay-header">
+                    <h2>News & Info.</h2>
+                    <span class="close-button">&times;</span>
+                </div>
+                <div class="app-tile-grid">
+                    <a href="https://www.ventusky.com/radar-map#p=45.8;-88.6;4" target="_blank" class="app-tile">
+                        <h3 class="app-title">Weather</h3>
+                    </a>
+                    <a href="https://www.kcrg.com/weather/closings/" target="_blank" class="app-tile">
+                        <h3 class="app-title">School Closing</h3>
+                    </a>
+                    <a href="https://apnews.com/" target="_blank" class="app-tile">
+                        <h3 class="app-title">AP News</h3>
+                    </a>
+                    <a href="https://www.wikipedia.org/" target="_blank" class="app-tile">
+                        <h3 class="app-title">Wikipedia</h3>
+                    </a>
+                    <a href="https://www.kcrg.com/" target="_blank" class="app-tile">
+                        <h3 class="app-title">KCRG</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOOLS OVERLAY -->
+        <div id="tools-overlay" class="page-overlay">
+            <div class="overlay-content">
+                <div class="overlay-header">
+                    <h2>Tools</h2>
+                    <span class="close-button">&times;</span>
+                </div>
+                <div class="app-tile-grid">
+                    <a href="https://calendar.google.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Google Calendar</h3>
+                    </a>
+                    <a href="https://translate.google.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Google Translate</h3>
+                    </a>
+                    <a href="https://www.github.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">GitHub</h3>
+                    </a>
+                    <a href="https://stackoverflow.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Stack Overflow</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENTERTAINMENT OVERLAY -->
+        <div id="entertainment-overlay" class="page-overlay">
+            <div class="overlay-content">
+                <div class="overlay-header">
+                    <h2>Entertainment</h2>
+                    <span class="close-button">&times;</span>
+                </div>
+                <div class="app-tile-grid">
+                    <a href="https://www.youtube.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">YouTube</h3>
+                    </a>
+                    <a href="https://www.netflix.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Netflix</h3>
+                    </a>
+                    <a href="https://open.spotify.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Spotify</h3>
+                    </a>
+                    <a href="https://www.twitch.tv" target="_blank" class="app-tile">
+                        <h3 class="app-title">Twitch</h3>
+                    </a>
+                    <a href="https://www.imdb.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">IMDb</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEARNING OVERLAY -->
+        <div id="learning-overlay" class="page-overlay">
+            <div class="overlay-content">
+                <div class="overlay-header">
+                    <h2>Learning</h2>
+                    <span class="close-button">&times;</span>
+                </div>
+                <div class="app-tile-grid">
+                    <a href="https://www.coursera.org" target="_blank" class="app-tile">
+                        <h3 class="app-title">Coursera</h3>
+                    </a>
+                    <a href="https://www.edx.org" target="_blank" class="app-tile">
+                        <h3 class="app-title">edX</h3>
+                    </a>
+                    <a href="https://www.khanacademy.org" target="_blank" class="app-tile">
+                        <h3 class="app-title">Khan Academy</h3>
+                    </a>
+                    <a href="https://www.udemy.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Udemy</h3>
+                    </a>
+                    <a href="https://www.codecademy.com" target="_blank" class="app-tile">
+                        <h3 class="app-title">Codecademy</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: GAME SELECTION OVERLAY -->
+        <div id="games-selection-overlay" class="page-overlay">
+            <div class="overlay-content game-selection-content">
+                <div class="overlay-header">
+                    <h2>Choose Your Game</h2>
+                    <span class="close-button">&times;</span>
+                </div>
+                <div class="app-tile-grid">
+                    <!-- The 'data-game-src' MUST match the filename of your game's HTML file -->
+                    <a href="#" class="app-tile" data-game-src="RetroBowl.html">
+                        <h3 class="app-title">Retro Bowl</h3>
+                    </a>
+                    <a href="#" class="app-tile" data-game-src="AnotherGame.html">
+                        <h3 class="app-title">Another Game</h3>
+                    </a>
+                    <a href="#" class="app-tile" data-game-src="GameLink3.html">
+                        <h3 class="app-title">Game Link 3</h3>
+                    </a>
+                    <!-- Add more game selection tiles here as needed -->
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN GAME PLAYING OVERLAY (Holds the iframe) -->
+        <div id="game-overlay" class="page-overlay">
+            <div class="overlay-content game-play-content">
+                <div class="overlay-header">
+                    <h2>Playing Game</h2>
+                    <span class="close-button">&times;</span>
+                </div>
+                <!-- The iframe will load the selected game HTML file -->
+                <iframe id="game-frame" src="" frameborder="0" class="game-iframe"></iframe>
+            </div>
+        </div>
+    </main>
+
+    <!-- Navigation Bar moved to the bottom -->
+    <nav class="main-navigation-bar">
+        <div class="main-nav-content">
+            <ul class="main-nav-list">
+                <!-- Other navigation links -->
+                <li class="main-nav-item"><a href="#" class="main-nav-link" data-target="google">Google</a></li>
+                <li class="main-nav-item"><a href="#" class="main-nav-link" data-target="news">News & Info</a></li>
+                <li class="main-nav-item"><a href="#" class="main-nav-link" data-target="tools">Tools</a></li>
+                <li class="main-nav-item"><a href="#" class="main-nav-link" data-target="entertainment">Entertainment</a></li>
+                <li class="main-nav-item"><a href="#" class="main-nav-link" data-target="learning">Learning</a></li>
+                <!-- Game navigation link opens the Game SELECTION overlay -->
+                <li class="main-nav-item"><a href="#" class="main-nav-link" data-target="games">Games</a></li>
+            </ul>
+            <div class="hamburger-menu">
+                <div class="hamburger-icon bar1"></div>
+                <div class="hamburger-icon bar2"></div>
+                <div class="hamburger-icon bar3"></div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        const hamburgerMenu = document.querySelector('.hamburger-menu');
+        const mainNavList = document.querySelector('.main-nav-list');
+        const navLinks = document.querySelectorAll('.main-nav-link');
+        const pageOverlays = document.querySelectorAll('.page-overlay');
+        const closeButtons = document.querySelectorAll('.close-button');
+        const gameFrame = document.getElementById('game-frame'); // Get the iframe element
+
+        // --- Hamburger Menu Toggle ---
+        hamburgerMenu.addEventListener('click', () => {
+            hamburgerMenu.classList.toggle('active');
+            mainNavList.classList.toggle('active');
+        });
+
+        // --- Navigation Link Click Handler ---
+        navLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const targetId = link.getAttribute('data-target');
+
+                if (targetId === 'games') {
+                    // If it's the "Games" link, open the game selection overlay
+                    openGameSelectionOverlay();
+                } else {
+                    // For other links, open their respective overlays
+                    const targetOverlayId = targetId + '-overlay';
+                    openAppOverlay(targetOverlayId);
+                }
+
+                // Close hamburger menu if open
+                if (hamburgerMenu.classList.contains('active')) {
+                    hamburgerMenu.classList.remove('active');
+                    mainNavList.classList.remove('active');
+                }
+            });
+        });
+
+        // --- Game Selection Tile Click Handler ---
+        document.addEventListener('click', function(e) {
+            // Check if the clicked element is an app-tile and it's within the game selection overlay
+            if (e.target && e.target.classList.contains('app-tile') && e.target.closest('#games-selection-overlay')) {
+                e.preventDefault(); // Prevent default anchor behavior
+
+                const gameSrc = e.target.getAttribute('data-game-src');
+                if (gameSrc) {
+                    // Open the main game overlay and load the selected game
+                    openGamePlayOverlay(gameSrc);
+                }
+            }
+        });
+
+        // --- Close Button Click ---
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                closeOverlay();
+            });
+        });
+
+        // --- Function to Open App Overlays (like Google, News, etc.) ---
+        function openAppOverlay(overlayId) {
+            const overlay = document.getElementById(overlayId);
+            if (overlay) {
+                pageOverlays.forEach(page => page.classList.remove('visible'));
+                overlay.classList.add('visible');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling behind overlay
+            }
+        }
+
+        // --- Function to Open the Game SELECTION Overlay ---
+        function openGameSelectionOverlay() {
+            const selectionOverlay = document.getElementById('games-selection-overlay');
+            if (selectionOverlay) {
+                pageOverlays.forEach(page => page.classList.remove('visible'));
+                selectionOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling behind overlay
+            }
+        }
+
+        // --- Function to Open the MAIN GAME PLAYING Overlay ---
+        function openGamePlayOverlay(gameSrc) {
+            const playOverlay = document.getElementById('game-overlay');
+            if (playOverlay) {
+                pageOverlays.forEach(page => page.classList.remove('visible'));
+                gameFrame.src = gameSrc; // This is where RetroBowl.html (or other game) gets loaded
+                playOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling behind overlay
+            }
+        }
+
+        // --- Function to Close ALL Overlays ---
+        function closeOverlay() {
+            pageOverlays.forEach(page => page.classList.remove('visible'));
+            document.body.style.overflow = ''; // Restore scrolling
+
+            // When closing the game overlay, clear the iframe source
+            if (gameFrame.src) {
+                gameFrame.src = '';
+            }
+        }
+
+        // --- Close Overlay if clicking outside the content ---
+        pageOverlays.forEach(overlay => {
+            overlay.addEventListener('click', (event) => {
+                // Close if clicking on the overlay background itself, UNLESS it's the game-playing overlay
+                if (event.target === overlay && !overlay.id.includes('game-overlay')) {
+                    closeOverlay();
+                }
+            });
+        });
+
+        // --- Optional: Close overlay with Escape key ---
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeOverlay();
+            }
+        });
+    </script>
+</body>
+</html>
